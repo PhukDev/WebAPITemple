@@ -1,0 +1,6 @@
+@WebAPITemple_HostAddress = http://localhost:5204
+
+GET {{WebAPITemple_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
