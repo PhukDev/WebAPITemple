@@ -36,9 +36,9 @@ authorRepository)
         }
 
         [HttpPost("add-author")]
-        public IActionResult AddAuthors([FromBody] AddAuthorRequestDTO
-addAuthorRequestDTO)
+        public IActionResult AddAuthors([FromBody] AddAuthorRequestDTO addAuthorRequestDTO)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var authorAdd = _authorRepository.AddAuthor(addAuthorRequestDTO);
             return Ok();
         }

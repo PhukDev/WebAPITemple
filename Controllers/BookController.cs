@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using WebAPITemple.CustomActionFilter;
 using WebAPITemple.Data;
 using WebAPITemple.Models.Domain;
 using WebAPITemple.Models.DTO;
 using WebAPITemple.Repositories;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WebAPITemple.Controllers
 {
@@ -11,7 +15,8 @@ namespace WebAPITemple.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly IBookRepository _bookRepository;  
+        private readonly IBookRepository _bookRepository;
+        private readonly AppDbContext _context;
 
         public BooksController(IBookRepository bookRepository)
         {
@@ -34,9 +39,11 @@ namespace WebAPITemple.Controllers
         }
 
         [HttpPost("add-book")]
+        [ValidateModel]  // Custom Action Filter
+        //  [Authorize(Roles = "Write")]
         public async Task<IActionResult> AddBookAsync([FromBody] addBookRequestDTO addBookRequestDTO)  // Async
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ValidateAddBook(addBookRequestDTO)) return BadRequest(ModelState);
             var bookAdded = await _bookRepository.AddBookAsync(addBookRequestDTO);
             return Ok(bookAdded);
         }
@@ -57,5 +64,36 @@ namespace WebAPITemple.Controllers
             if (deletedBook == null) return NotFound();
             return Ok(deletedBook);
         }
+
+        private bool ValidateAddBook(addBookRequestDTO addBookRequestDTO)
+        {
+            if (addBookRequestDTO == null)
+            {
+                ModelState.AddModelError(nameof(addBookRequestDTO), $"Please add book data"); 
+                return false;
+            }
+            // kiem tra Description NotNull 
+            if (string.IsNullOrEmpty(addBookRequestDTO.Description))
+            {
+                ModelState.AddModelError(nameof(addBookRequestDTO.Description), $"{nameof(addBookRequestDTO.Description)} cannot be null");
+            }
+            // kiem tra rating (0,5) 
+            if (addBookRequestDTO.Rate < 0 || addBookRequestDTO.Rate > 5)
+            {
+                ModelState.AddModelError(nameof(addBookRequestDTO.Rate), $"{nameof(addBookRequestDTO.Rate)} cannot be less than 0 and more than 5");
+            }
+            if (ModelState.ErrorCount > 0)
+            {
+                return false;
+            }
+            if (!_context.Publishers.Any(p => p.Id == addBookRequestDTO.PublisherId))
+            {
+                ModelState.AddModelError(nameof(addBookRequestDTO.PublisherId), "PublisherID does not exist");
+                return false;
+            }
+            return true;
+        }
+
+
     }
 }

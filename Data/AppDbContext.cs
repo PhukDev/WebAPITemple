@@ -21,10 +21,12 @@ namespace WebAPITemple.Data
                 .WithMany(ba => ba.BookAuthors)
                 .HasForeignKey(bi => bi.AuthorId);
             base.OnModelCreating(modelBuilder);
+
         }
         public DbSet<Book> Books { get; set; }
         public DbSet<Authors> Authors { get; set; }
         public DbSet<Publishers> Publishers { get; set; }
         public DbSet<Book_Author> Book_Authors { get; set; }
+
     }
 }

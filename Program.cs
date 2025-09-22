@@ -12,6 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IBookRepository, SQLBookRepository>();
 builder.Services.AddScoped<IAuthorRepository, SQLAuthorRepository>();
 builder.Services.AddScoped<IPublisherRepository, SQLPublisherRepository>();
+builder.Services.AddScoped<IBookAuthorRepository, SQLBookAuthorRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
