@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebAPITemple.Data;
 using WebAPITemple.Models.Domain;
 using WebAPITemple.Models.DTO;
@@ -44,16 +45,21 @@ authorRepository)
         }
 
         [HttpPut("update-author-by-id/{id}")]
-        public IActionResult UpdateBookById(int id, [FromBody] AuthorNoIdDTO authorDTO)
+        public IActionResult UpdateAuthorById(int id, [FromBody] AuthorNoIdDTO authorDTO)
         {
             var authorUpdate = _authorRepository.UpdateAuthorById(id, authorDTO);
             return Ok(authorUpdate);
         }
 
         [HttpDelete("delete-author-by-id/{id}")]
-        public IActionResult DeleteBookById(int id)
+        public IActionResult DeleteAuthorById(int id)
         {
-            var authorDelete = _authorRepository.DeleteAuthorById(id);
+            var author = _dbContext.Authors.Find(id);
+            if (author == null) return NotFound();
+            if (_dbContext.Book_Authors.Any(ba => ba.AuthorId == id))
+                return BadRequest("Cannot delete Author with associated Books");
+            _dbContext.Authors.Remove(author);
+            _dbContext.SaveChangesAsync();
             return Ok();
         }
     }
