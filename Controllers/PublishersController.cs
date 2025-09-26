@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebAPITemple.Data;
 using WebAPITemple.Models.DTO;
 using WebAPITemple.Repositories;
@@ -50,7 +51,12 @@ namespace WebAPITemple.Controllers
         [HttpDelete("delete-publisher-by-id/{id}")]
         public IActionResult DeletePublisherById(int id)
         {
-            var publisherDelete = _publisherRepository.DeletePublisherById(id);
+            var publisher = _dbContext.Publishers.Find(id);
+            if (publisher == null) return NotFound();
+            if (_dbContext.Books.Any(b => b.PublisherId == id))
+                return BadRequest("Cannot delete Publisher with associated Books");
+            _dbContext.Publishers.Remove(publisher);
+            _dbContext.SaveChangesAsync();
             return Ok();
         }
     }
