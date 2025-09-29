@@ -24,9 +24,9 @@ namespace WebAPITemple.Controllers
         }
 
         [HttpGet("get-all-books")]
-        public async Task<IActionResult> GetAllAsync()  // Async
+        public async Task<IActionResult> GetAllAsync([FromQuery] string? filterOn, [FromQuery] string? filterQuery, [FromQuery] string? sortBy, [FromQuery] bool isAscending, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)  // Async
         {
-            var allBooks = await _bookRepository.GetAllBooksAsync();  // Await
+            var allBooks = await _bookRepository.GetAllBooksAsync(filterOn,filterQuery, sortBy, isAscending, pageNumber, pageSize);  // Await
             return Ok(allBooks);
         }
 
