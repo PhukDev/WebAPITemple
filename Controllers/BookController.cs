@@ -13,17 +13,20 @@ namespace WebAPITemple.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BooksController : ControllerBase
     {
         private readonly IBookRepository _bookRepository;
         private readonly AppDbContext _context;
 
-        public BooksController(IBookRepository bookRepository)
+        public BooksController(IBookRepository bookRepository, AppDbContext context)
         {
             _bookRepository = bookRepository;
+            _context = context  ?? throw new ArgumentNullException(nameof(context));
         }
 
         [HttpGet("get-all-books")]
+        [Authorize(Roles = "Read")]
         public async Task<IActionResult> GetAllAsync([FromQuery] string? filterOn, [FromQuery] string? filterQuery, [FromQuery] string? sortBy, [FromQuery] bool isAscending, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)  // Async
         {
             var allBooks = await _bookRepository.GetAllBooksAsync(filterOn,filterQuery, sortBy, isAscending, pageNumber, pageSize);  // Await
@@ -31,6 +34,7 @@ namespace WebAPITemple.Controllers
         }
 
         [HttpGet("get-book-by-id/{id}")]
+        [Authorize(Roles = "Read")]
         public async Task<IActionResult> GetBookByIdAsync(int id)  // Async
         {
             var book = await _bookRepository.GetBookByIdAsync(id);
@@ -39,6 +43,7 @@ namespace WebAPITemple.Controllers
         }
 
         [HttpPost("add-book")]
+        [Authorize(Roles ="Write")]
         [ValidateModel]  // Custom Action Filter
         //  [Authorize(Roles = "Write")]
         public async Task<IActionResult> AddBookAsync([FromBody] addBookRequestDTO addBookRequestDTO)  // Async
@@ -49,6 +54,7 @@ namespace WebAPITemple.Controllers
         }
 
         [HttpPut("update-book-by-id/{id}")]
+        [Authorize(Roles = "Write")]
         public async Task<IActionResult> UpdateBookByIdAsync(int id, [FromBody] addBookRequestDTO bookDTO)  // Async
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -58,6 +64,7 @@ namespace WebAPITemple.Controllers
         }
 
         [HttpDelete("delete-book-by-id/{id}")]
+        [Authorize(Roles = "Write")]
         public async Task<IActionResult> DeleteBookByIdAsync(int id)  // Async
         {
             var deletedBook = await _bookRepository.DeleteBookByIdAsync(id);
